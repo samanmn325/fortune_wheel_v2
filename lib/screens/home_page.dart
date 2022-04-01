@@ -14,6 +14,7 @@ import '../components/my_alert_btn.dart';
 import '../components/my_drawer.dart';
 import '../components/my_nav_bar.dart';
 import '../components/point_container.dart';
+import '../components/try_again.dart';
 import '../components/wheel_items.dart';
 import '../constants.dart';
 import '../network.dart';
@@ -36,73 +37,85 @@ class _HomePageState extends State<HomePage> {
   int starPoint = 0;
   int? selectedItem2;
   bool disable = false;
+  bool isconnected = false;
+
   final player = AudioCache();
   AudioPlayer player2 = AudioPlayer();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 // wheelFunction is fortune wheel function
   wheelFunction() async {
     print("پایان");
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    selected.stream.listen((event) {
-      setState(() {
-        selectedItem2 = event;
-      });
-    });
-    if (selectedItem2 != null) {
-      if (selectedItem2 == 0 ||
-          selectedItem2 == 3 ||
-          selectedItem2 == 6 ||
-          selectedItem2 == 9) {
-        sum += 100;
-        player.play('sounds/win2.wav', mode: PlayerMode.LOW_LATENCY);
-
-        kToastWin("تبریک! شما برنده 100 امتیاز شدید");
+    // here we update rate to woocommerce(server)
+    try {
+      final result = await InternetAddress.lookup('example.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        print('connected');
         setState(() {
-          point += sum;
-          sum = 0;
+          isconnected = true;
         });
-      } else if (selectedItem2 == 1 ||
-          selectedItem2 == 4 ||
-          selectedItem2 == 7 ||
-          selectedItem2 == 10) {
-        player.play('sounds/lose.wav', mode: PlayerMode.LOW_LATENCY);
+        /////////////////////////////////////////////////////
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        selected.stream.listen((event) {
+          setState(() {
+            selectedItem2 = event;
+          });
+        });
+        if (selectedItem2 != null) {
+          if (selectedItem2 == 0 ||
+              selectedItem2 == 3 ||
+              selectedItem2 == 6 ||
+              selectedItem2 == 9) {
+            sum += 100;
+            player.play('sounds/win2.wav', mode: PlayerMode.LOW_LATENCY);
+            kToastWin("تبریک! شما برنده 100 امتیاز شدید");
+            setState(() {
+              point += sum;
+              sum = 0;
+            });
+          } else if (selectedItem2 == 1 ||
+              selectedItem2 == 4 ||
+              selectedItem2 == 7 ||
+              selectedItem2 == 10) {
+            player.play('sounds/lose.wav', mode: PlayerMode.LOW_LATENCY);
 
-        kToastLose('متاسفانه شما امتیازی کسب نکردید');
-      } else if (selectedItem2 == 2 ||
-          selectedItem2 == 5 ||
-          selectedItem2 == 8 ||
-          selectedItem2 == 11) {
-        sum += 10;
-        player.play('sounds/win2.wav', mode: PlayerMode.LOW_LATENCY);
+            kToastLose('متاسفانه شما امتیازی کسب نکردید');
+          } else if (selectedItem2 == 2 ||
+              selectedItem2 == 5 ||
+              selectedItem2 == 8 ||
+              selectedItem2 == 11) {
+            sum += 10;
+            player.play('sounds/win2.wav', mode: PlayerMode.LOW_LATENCY);
 
-        kToastWin("تبریک ! شما برنده 10 امتیاز شدید");
-        setState(() {
-          point += sum;
-          sum = 0;
-        });
+            kToastWin("تبریک ! شما برنده 10 امتیاز شدید");
+            setState(() {
+              point += sum;
+              sum = 0;
+            });
+          }
+          if (point >= 200) {
+            setState(() {
+              point -= 200;
+              starPoint += 1;
+              kToastWin("تبریک ! شما یک ستاره دریافت کردید");
+            });
+          }
+          ///////////////////////////////////////////////////
+          if (Brain.user.id != null) {
+            print('شروع بروزرسانی');
+            Network().updateUser(
+                id: Brain.user.id!,
+                rate: point.toString(),
+                star: starPoint.toString());
+          }
+        } else {
+          kToast('دوباره تلاش کنید');
+        }
       }
-      if (point >= 200) {
-        setState(() {
-          point -= 200;
-          starPoint += 1;
-          kToastWin("تبریک ! شما یک ستاره دریافت کردید");
-        });
-      }
-      // here we update rate to woocommerce(server)
-      if (Brain.user.id != null) {
-        print('شروع بروزرسانی');
-        Network().updateUser(
-            id: Brain.user.id!,
-            rate: point.toString(),
-            star: starPoint.toString());
-      }
+    } on SocketException catch (_) {
+      print('not connected');
+      kToast("برای ثبت امتیاز باید به اینترنت متصل باشید!");
       setState(() {
-        disable = false;
-      });
-    } else {
-      kToast('دوباره تلاش کنید');
-      setState(() {
-        disable = false;
+        isconnected = false;
       });
     }
   }
@@ -210,13 +223,6 @@ class _HomePageState extends State<HomePage> {
                   child: SizedBox(
                     height: MediaQuery.of(context).size.height * 0.42,
                     width: MediaQuery.of(context).size.width * 0.86,
-                    // height: MediaQuery.of(context).size.height * 0.42,
-                    // width: MediaQuery.of(context).size.width * 0.86,
-                    // decoration: BoxDecoration(
-                    //   border: Border.all(color: kButtonColor, width: 15),
-                    //   borderRadius:
-                    //       const BorderRadius.all(Radius.circular(500.0)),
-                    // ),
                     child: FortuneWheel(
                         animateFirst: false,
                         selected: selected.stream,
@@ -233,11 +239,10 @@ class _HomePageState extends State<HomePage> {
                         items: items2),
                   ),
                 ),
-                disable
-                    ? const SizedBox(
-                        height: 50,
-                        width: 100,
-                      )
+                !isconnected
+                    ? TryAgain(callBack: () {
+                        wheelFunction();
+                      })
                     : MyBtn1(
                         mLable: 'چرخش',
                         mColor: kButtonColor,
@@ -248,7 +253,6 @@ class _HomePageState extends State<HomePage> {
                             selected.add(
                               Fortune.randomInt(0, 8),
                             );
-                            disable = true;
                           });
                         },
                       ),

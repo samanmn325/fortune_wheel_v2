@@ -44,6 +44,11 @@ class _WelcomePageState extends State<WelcomePage> {
       }
     } on SocketException catch (_) {
       print('not connected');
+      kToast('اشکال در اتصال به اینترنت!');
+      kToast('لطفاً از اتصال به اینترنت مطمئین شوید و دوباره تلاش کنید!');
+      setState(() {
+        isConnected = false;
+      });
     }
   }
 

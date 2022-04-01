@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:fortune_wheel_v2/components/try_again.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../components/logo_container.dart';
@@ -9,6 +10,7 @@ import '../components/my_alert_btn.dart';
 import '../components/my_btn1.dart';
 import '../constants.dart';
 import '../network.dart';
+import 'brain.dart';
 import 'home_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -26,7 +28,47 @@ class _LoginPageState extends State<LoginPage> {
 
   String phoneNumber = '0';
   String name = '';
-  int isSignedup = 0;
+  bool isConnected = false;
+
+  logInFunction() async {
+    try {
+      final result = await InternetAddress.lookup('example.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        print('connected');
+        setState(() {
+          isConnected = true;
+        });
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        try {
+          if (phoneNumber.length == 11) {
+            Network().getUserId(phoneNumber);
+
+            if (phoneNumber != '0' && name != '' && !Brain.isSignedup) {
+              Network().createUser(name: name, phoneNumber: phoneNumber);
+              prefs.setString('phone number', phoneNumber);
+              Navigator.pushNamedAndRemoveUntil(
+                  context, HomePage.routeName, (route) => false);
+            } else if (Brain.isSignedup) {
+              prefs.setString('phone number', phoneNumber);
+              Navigator.pushNamedAndRemoveUntil(
+                  context, HomePage.routeName, (route) => false);
+            }
+          } else {
+            kToast("لطفا نام و شماره تلفن خود را به درستی وارد کنید");
+          }
+        } catch (e) {
+          print(e);
+        }
+      }
+    } on SocketException catch (_) {
+      print('not connected');
+      kToast('اشکال در اتصال به اینترنت!');
+      kToast('برای ورود باید به اینترنت متصل باشید!');
+      setState(() {
+        isConnected = false;
+      });
+    }
+  }
 
   /// The onBackPressed is for Restrict Android backButton
   Future<bool?> onBackPressed() async {
@@ -48,7 +90,7 @@ class _LoginPageState extends State<LoginPage> {
                       exit(0);
                     },
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 30,
                   ),
                   MyAlertBtn(
@@ -161,32 +203,19 @@ class _LoginPageState extends State<LoginPage> {
               ),
               Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: MyBtn1(
-                  mLable: 'ورود',
-                  mColor: kButtonColor,
-                  mPress: () async {
-                    SharedPreferences prefs =
-                        await SharedPreferences.getInstance();
-                    try {
-                      if (phoneNumber != '0' && name != '' && isSignedup == 0) {
-                        Network()
-                            .createUser(name: name, phoneNumber: phoneNumber);
-                        prefs.setString('phone number', phoneNumber);
-                        Navigator.pushNamedAndRemoveUntil(
-                            context, HomePage.routeName, (route) => false);
-                      } else if (isSignedup == 1) {
-                        prefs.setString('phone number', phoneNumber);
-                        Navigator.pushNamedAndRemoveUntil(
-                            context, HomePage.routeName, (route) => false);
-                      } else {
-                        kToast(
-                            "لطفا نام و شماره تلفن خود را به درستی وارد کنید");
-                      }
-                    } catch (e) {
-                      print(e);
-                    }
-                  },
-                ),
+                child: isConnected
+                    ? SizedBox(
+                        height: 50,
+                        width: 100,
+                        child: TryAgain(callBack: () {
+                          logInFunction();
+                        }),
+                      )
+                    : MyBtn1(
+                        mLable: 'ورود',
+                        mColor: kButtonColor,
+                        mPress: logInFunction,
+                      ),
               ),
             ],
           ),

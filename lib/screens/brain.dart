@@ -12,6 +12,7 @@ class Brain extends StatefulWidget {
   static late String youtubeUrl;
   static late String instagramUrl;
   static late User user;
+  static late bool isSignedup;
   @override
   State<Brain> createState() => _BrainState();
 }

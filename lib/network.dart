@@ -112,6 +112,9 @@ class Network {
                 phoneNumber: phoneNumber,
                 star: tempStar,
                 rate: tempRate);
+            Brain.isSignedup = true;
+          } else {
+            Brain.isSignedup = false;
           }
         }
       }
