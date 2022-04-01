@@ -37,7 +37,7 @@ class _HomePageState extends State<HomePage> {
   final player = AudioCache();
   AudioPlayer player2 = AudioPlayer();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
+// wheelFunction is fortune wheel function
   wheelFunction() async {
     print("پایان");
     SharedPreferences prefs = await SharedPreferences.getInstance();
