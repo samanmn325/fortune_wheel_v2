@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:fortune_wheel_v2/constants.dart';
+import 'package:fortune_wheel_v2/screens/brain.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -41,15 +42,15 @@ class Network {
       }
       for (var temp in users) {
         if (temp.name == "youtube") {
-          WelcomePage.youtubeUrl = kParseHtmlString(temp.phoneNumber!);
-          print(WelcomePage.instagramUrl);
+          Brain.youtubeUrl = kParseHtmlString(temp.phoneNumber!);
+          print(Brain.instagramUrl);
         } else if (temp.name == "telegram") {
-          WelcomePage.telegramUrl = kParseHtmlString(temp.phoneNumber!);
+          Brain.telegramUrl = kParseHtmlString(temp.phoneNumber!);
         } else if (temp.name == "instagram") {
-          WelcomePage.instagramUrl = kParseHtmlString(temp.phoneNumber!);
+          Brain.instagramUrl = kParseHtmlString(temp.phoneNumber!);
         }
       }
-      WelcomePage.UserList = users;
+      Brain.UserList = users;
       print("products are : ");
       print(users);
     } else {
@@ -88,34 +89,33 @@ class Network {
     }
   }
 
-  getUserId() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? _phone = prefs.getString('phone number');
-    prefs.remove('id');
-    if (_phone != null) {
-      var long1 = double.parse(_phone);
-      for (User temp in WelcomePage.UserList) {
-        String a = kParseHtmlString(temp.phoneNumber!);
-        var long2 = double.parse(a);
-        print(long1);
-        print(long2);
-        if (long1 == long2) {
-          prefs.setInt('id', temp.id!);
-          int _id = prefs.getInt('id')!;
-          String b = kParseHtmlString(temp.rate!);
-          int _rate = int.parse(b);
-          String d = kParseHtmlString(temp.star!);
-          int _star = int.parse(d);
-          // WelcomePage.user = User(
-          //     id: _id,
-          //     phoneNumber: _phone,
-          //     star: _star.toString(),
-          //     rate: _rate.toString());
+  getUserId(String? phoneNumber) async {
+    if (phoneNumber != null) {
+      double num1 = double.parse(phoneNumber);
+      for (User tempUser in Brain.UserList) {
+        String charNum1 = kParseHtmlString(tempUser.phoneNumber!);
+
+        /// replaceAll() is for remove all whitespaces
+        charNum1 = charNum1.replaceAll(RegExp(r"\s+"), "");
+        if (charNum1.length == 11) {
+          double num2 = double.parse(charNum1);
+          if (num1 == num2) {
+            print("id is : ${tempUser.id!}");
+            String tempRate = kParseHtmlString(tempUser.rate!);
+            tempRate = tempRate.replaceAll(RegExp(r"\s+"), "");
+            // int _rate = int.parse(tempRate);
+            String tempStar = kParseHtmlString(tempUser.star!);
+            tempStar = tempStar.replaceAll(RegExp(r"\s+"), "");
+            // int _star = int.parse(tempStar);
+            Brain.user = User(
+                id: tempUser.id!,
+                phoneNumber: phoneNumber,
+                star: tempStar,
+                rate: tempRate);
+          }
         }
-        return;
       }
     }
-    return;
   }
 
   updateUser({required int id, String? rate, String? star}) async {

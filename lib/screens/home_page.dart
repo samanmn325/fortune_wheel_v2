@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_fortune_wheel/flutter_fortune_wheel.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:fortune_wheel_v2/screens/brain.dart';
 import 'package:fortune_wheel_v2/screens/login_page.dart';
 import 'package:fortune_wheel_v2/screens/welcome_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -34,6 +35,7 @@ class _HomePageState extends State<HomePage> {
   int point = 0;
   int starPoint = 0;
   int? selectedItem2;
+  bool disable = false;
   final player = AudioCache();
   AudioPlayer player2 = AudioPlayer();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -87,14 +89,21 @@ class _HomePageState extends State<HomePage> {
         });
       }
       // here we update rate to woocommerce(server)
-      int? id = prefs.getInt('id');
-      if (id != null) {
+      if (Brain.user.id != null) {
         print('شروع بروزرسانی');
         Network().updateUser(
-            id: id, rate: point.toString(), star: starPoint.toString());
+            id: Brain.user.id!,
+            rate: point.toString(),
+            star: starPoint.toString());
       }
+      setState(() {
+        disable = false;
+      });
     } else {
       kToast('دوباره تلاش کنید');
+      setState(() {
+        disable = false;
+      });
     }
   }
 
@@ -136,30 +145,19 @@ class _HomePageState extends State<HomePage> {
         });
   }
 
-  getInfo() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? phoneNumber1 = prefs.getString('phone number');
-    print(phoneNumber1);
-    // if (phoneNumber1 != null) {
-    //   var long1 = double.parse(phoneNumber1);
-    //   for (var temp in WelcomePage.UserList) {
-    //     String a = kParseHtmlString(temp.phoneNumber!);
-    //     var long2 = double.parse(a);
-    //     if (long1 == long2) {
-    //       prefs.setInt('id', temp.id!);
-    //       String b = kParseHtmlString(temp.rate!);
-    //       int c = int.parse(b);
-    //       String d = kParseHtmlString(temp.star!);
-    //       int e = int.parse(d);
-    //       setState(() {
-    //         point = c;
-    //         print(point);
-    //         starPoint = e;
-    //         print(starPoint);
-    //       });
-    //     }
-    //   }
-    // }
+  getInfo() {
+    setState(() {
+      String? _rate = Brain.user.star;
+      String? _star = Brain.user.rate;
+      if (_rate != null) {
+        int r = int.parse(_rate);
+        point = r;
+      }
+      if (_star != null) {
+        int s = int.parse(_star);
+        starPoint = s;
+      }
+    });
   }
 
   @override
@@ -235,18 +233,25 @@ class _HomePageState extends State<HomePage> {
                         items: items2),
                   ),
                 ),
-                MyBtn1(
-                  mLable: 'چرخش',
-                  mColor: kButtonColor,
-                  mPress: () {
-                    player.play('sounds/s2.wav', mode: PlayerMode.LOW_LATENCY);
-                    setState(() {
-                      selected.add(
-                        Fortune.randomInt(0, 8),
-                      );
-                    });
-                  },
-                ),
+                disable
+                    ? const SizedBox(
+                        height: 50,
+                        width: 100,
+                      )
+                    : MyBtn1(
+                        mLable: 'چرخش',
+                        mColor: kButtonColor,
+                        mPress: () {
+                          player.play('sounds/s2.wav',
+                              mode: PlayerMode.LOW_LATENCY);
+                          setState(() {
+                            selected.add(
+                              Fortune.randomInt(0, 8),
+                            );
+                            disable = true;
+                          });
+                        },
+                      ),
                 MyNavBar(),
               ],
             ),

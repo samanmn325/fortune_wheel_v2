@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:html/parser.dart';
 
@@ -56,19 +57,8 @@ const kBoxDecoration = BoxDecoration(
     fit: BoxFit.cover,
   ),
 );
-//  FortuneItem fortuneItem(String label,Color sliceColor, Color borderColor) {
-//      return  FortuneItem(
-//                           child: Text(
-//                             label,
-//                             style: const TextStyle(fontSize: 20.0),
-//                           ),
-//                           style: FortuneItemStyle(
-//                             color: sliceColor, // <-- custom circle slice fill color
-//                             borderColor: borderColor, // <-- custom circle slice stroke color
-//                             borderWidth:3, // <-- custom circle slice stroke width
-//                           ),
-//                         );
-    
-//  }
-   
-                   
+
+const kSpinkit = SpinKitDualRing(
+  color: Color.fromARGB(255, 0, 0, 0),
+  size: 80.0,
+);

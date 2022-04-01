@@ -27,6 +27,7 @@ Future<void> main() async {
         ],
         locale: const Locale(
             "fa", "IR"), // OR Locale('ar', 'AE') OR Other RTL locales,
+        debugShowCheckedModeBanner: false,
         title: 'چرخ شانس',
         theme: ThemeData(
           primarySwatch: Colors.blue,

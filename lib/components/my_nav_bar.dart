@@ -4,6 +4,7 @@ import 'package:fortune_wheel_v2/constants.dart';
 import 'package:fortune_wheel_v2/screens/welcome_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../screens/brain.dart';
 import 'my_social_btn.dart';
 
 class MyNavBar extends StatelessWidget {
@@ -36,8 +37,8 @@ class MyNavBar extends StatelessWidget {
             mIconColor: Colors.redAccent,
             mPress: () {
               // _launchInWeb(instagramUrl);
-              if (WelcomePage.instagramUrl != '') {
-                _launchInWeb(WelcomePage.instagramUrl);
+              if (Brain.instagramUrl != '') {
+                _launchInWeb(Brain.instagramUrl);
               } else {
                 kToast('متاسفانه اینستاگرام فعلا آدرس دهی نشده');
               }
@@ -48,8 +49,8 @@ class MyNavBar extends StatelessWidget {
             mIconColor: Colors.blue,
             mPress: () {
               // _launchInWeb(telegramUrl);
-              if (WelcomePage.telegramUrl != '') {
-                _launchInWeb(WelcomePage.telegramUrl);
+              if (Brain.telegramUrl != '') {
+                _launchInWeb(Brain.telegramUrl);
               } else {
                 kToast('متاسفانه تلگرام فعلا آدرس دهی نشده');
               }
@@ -60,8 +61,8 @@ class MyNavBar extends StatelessWidget {
             mIconColor: Colors.red,
             mPress: () {
               // _launchInWeb(youTubeUrl);
-              if (WelcomePage.youtubeUrl != '') {
-                _launchInWeb(WelcomePage.youtubeUrl);
+              if (Brain.youtubeUrl != '') {
+                _launchInWeb(Brain.youtubeUrl);
               } else {
                 kToast('متاسفانه یوتیوب فعلا آدرس دهی نشده');
               }
