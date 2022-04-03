@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:fortune_wheel_v2/components/try_again.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../components/logo_container.dart';
@@ -11,7 +10,6 @@ import '../components/my_btn1.dart';
 import '../constants.dart';
 import '../network.dart';
 import 'brain.dart';
-import 'home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -29,6 +27,7 @@ class _LoginPageState extends State<LoginPage> {
   String phoneNumber = '0';
   String name = '';
   bool isConnected = false;
+  bool disable = false;
 
   logInFunction() async {
     try {
@@ -37,27 +36,39 @@ class _LoginPageState extends State<LoginPage> {
         print('connected');
         setState(() {
           isConnected = true;
+          disable = true;
         });
         SharedPreferences prefs = await SharedPreferences.getInstance();
         try {
           if (phoneNumber.length == 11) {
-            Network().getUserId(phoneNumber);
+            Network().getUserId(phoneNumber: phoneNumber);
 
-            if (phoneNumber != '0' && name != '' && !Brain.isSignedup) {
+            if (phoneNumber != '0' && name != '' && Brain.isSignedup == false) {
               Network().createUser(name: name, phoneNumber: phoneNumber);
               prefs.setString('phone number', phoneNumber);
-              Navigator.pushNamedAndRemoveUntil(
-                  context, HomePage.routeName, (route) => false);
-            } else if (Brain.isSignedup) {
+
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => Brain()));
+              // Navigator.pushNamedAndRemoveUntil(
+              //     context, WheelPage.routeName, (route) => false);
+            } else if (Brain.isSignedup == true) {
               prefs.setString('phone number', phoneNumber);
-              Navigator.pushNamedAndRemoveUntil(
-                  context, HomePage.routeName, (route) => false);
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => Brain()));
+              // Navigator.pushNamedAndRemoveUntil(
+              //     context, WheelPage.routeName, (route) => false);
             }
           } else {
             kToast("لطفا نام و شماره تلفن خود را به درستی وارد کنید");
+            setState(() {
+              disable = false;
+            });
           }
         } catch (e) {
           print(e);
+          setState(() {
+            disable = false;
+          });
         }
       }
     } on SocketException catch (_) {
@@ -66,6 +77,7 @@ class _LoginPageState extends State<LoginPage> {
       kToast('برای ورود باید به اینترنت متصل باشید!');
       setState(() {
         isConnected = false;
+        disable = false;
       });
     }
   }
@@ -95,7 +107,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   MyAlertBtn(
                     mLabel: 'خیر',
-                    mIcon: FontAwesomeIcons.multiply,
+                    mIcon: FontAwesomeIcons.xmark,
                     mColor: Colors.red,
                     mPress: () {
                       Navigator.of(context).pop(false);
@@ -106,6 +118,12 @@ class _LoginPageState extends State<LoginPage> {
             ],
           );
         });
+  }
+
+  @override
+  void deactivate() {
+    Brain.isSignedup = false;
+    super.deactivate();
   }
 
   @override
@@ -204,13 +222,19 @@ class _LoginPageState extends State<LoginPage> {
               Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: isConnected
-                    ? SizedBox(
-                        height: 50,
-                        width: 100,
-                        child: TryAgain(callBack: () {
-                          logInFunction();
-                        }),
-                      )
+                    ? (disable
+                        ? MyBtn1(
+                            mLable: 'ورود',
+                            mColor: Colors.blueGrey,
+                            mPress: () {
+                              kToast('لطفاً صبر کنید!');
+                            },
+                          )
+                        : MyBtn1(
+                            mLable: 'ورود',
+                            mColor: kButtonColor,
+                            mPress: logInFunction,
+                          ))
                     : MyBtn1(
                         mLable: 'ورود',
                         mColor: kButtonColor,

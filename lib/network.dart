@@ -2,10 +2,8 @@ import 'dart:convert';
 import 'package:fortune_wheel_v2/constants.dart';
 import 'package:fortune_wheel_v2/screens/brain.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'models/user_model.dart';
-import 'screens/welcome_page.dart';
 
 /// test.
 // const baseUrl = 'https://test.epicsite.ir/';
@@ -31,6 +29,9 @@ class Network {
 
       int t = 0;
       List<User> users = [];
+
+      /// this for's block is for add users to list
+
       for (var i in list) {
         users.add(User(
             id: list[t]['id'],
@@ -40,6 +41,8 @@ class Network {
             star: list[t]['short_description']));
         t++;
       }
+
+      /// this for's block is for add social link
       for (var temp in users) {
         if (temp.name == "youtube") {
           Brain.youtubeUrl = kParseHtmlString(temp.phoneNumber!);
@@ -89,7 +92,7 @@ class Network {
     }
   }
 
-  getUserId(String? phoneNumber) async {
+  getUserId({String? phoneNumber}) async {
     if (phoneNumber != null) {
       double num1 = double.parse(phoneNumber);
       for (User tempUser in Brain.UserList) {
@@ -100,28 +103,30 @@ class Network {
         if (charNum1.length == 11) {
           double num2 = double.parse(charNum1);
           if (num1 == num2) {
-            print("id is : ${tempUser.id!}");
+            String tempName = kParseHtmlString(tempUser.name!);
             String tempRate = kParseHtmlString(tempUser.rate!);
+            String tempStar = kParseHtmlString(tempUser.star!);
             tempRate = tempRate.replaceAll(RegExp(r"\s+"), "");
             // int _rate = int.parse(tempRate);
-            String tempStar = kParseHtmlString(tempUser.star!);
             tempStar = tempStar.replaceAll(RegExp(r"\s+"), "");
             // int _star = int.parse(tempStar);
             Brain.user = User(
                 id: tempUser.id!,
+                name: tempName,
                 phoneNumber: phoneNumber,
                 star: tempStar,
                 rate: tempRate);
+            print(Brain.user);
             Brain.isSignedup = true;
-          } else {
-            Brain.isSignedup = false;
           }
         }
+
       }
     }
   }
 
   updateUser({required int id, String? rate, String? star}) async {
+    print("id is $id");
     var headers = {
       'Content-Type': 'application/json',
       'Authorization':
@@ -142,22 +147,3 @@ class Network {
     }
   }
 }
-
-  // getUser() async {
-  //   var headers = {
-  //     'Authorization':
-  //         'Basic Y2tfZmRlOTE4MzIzYjQ4ZjlmNmU4ZDVkNDFmOGM0YTcxYTE3MjRjNjgyOTpjc19kMDVmMDNiMTUxYjczMzczYmUxZGU5MDY1NzQ3YTQwNmYzOTRjYjJi'
-  //   };
-  //   var request = http.Request('GET',
-  //       Uri.parse('https://betashop.epicsite.ir/wp-json/wc/v3/products'));
-
-  //   request.headers.addAll(headers);
-
-  //   http.StreamedResponse response = await request.send();
-
-  //   if (response.statusCode == 200) {
-  //     print(await response.stream.bytesToString());
-  //   } else {
-  //     print(response.reasonPhrase);
-  //   }
-  // }

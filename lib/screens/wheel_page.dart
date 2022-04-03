@@ -1,60 +1,59 @@
 import 'dart:async';
 import 'dart:io';
+
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_fortune_wheel/flutter_fortune_wheel.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:audioplayers/audioplayers.dart';
-import 'package:fortune_wheel_v2/screens/brain.dart';
-import 'package:fortune_wheel_v2/screens/login_page.dart';
-import 'package:fortune_wheel_v2/screens/welcome_page.dart';
+import 'package:fortune_wheel_v2/components/my_drawer.dart';
+import 'package:fortune_wheel_v2/components/my_nav_bar.dart';
+import 'package:fortune_wheel_v2/components/point_container.dart';
+import 'package:fortune_wheel_v2/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../components/my_btn1.dart';
 import '../components/my_alert_btn.dart';
-import '../components/my_drawer.dart';
-import '../components/my_nav_bar.dart';
-import '../components/point_container.dart';
+import '../components/my_btn1.dart';
 import '../components/try_again.dart';
 import '../components/wheel_items.dart';
-import '../constants.dart';
+import '../models/user_model.dart';
 import '../network.dart';
+import 'brain.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({
-    Key? key,
-  }) : super(key: key);
-  static String routeName = "/my_home_page";
-  static int? selectedItem;
-
+class WheelPage extends StatefulWidget {
+  const WheelPage({Key? key}) : super(key: key);
+  static String routeName = '/wheel_page';
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<WheelPage> createState() => _WheelPageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _WheelPageState extends State<WheelPage> {
   StreamController<int> selected = StreamController<int>.broadcast();
   int sum = 0;
   int point = 0;
   int starPoint = 0;
   int? selectedItem2;
+  bool isConnected = true;
   bool disable = false;
-  bool isconnected = false;
 
   final player = AudioCache();
   AudioPlayer player2 = AudioPlayer();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-// wheelFunction is fortune wheel function
+
+  /// wheelFunction run when animation ends up.
   wheelFunction() async {
     print("پایان");
+    setState(() {
+      disable = false;
+    });
     // here we update rate to woocommerce(server)
     try {
       final result = await InternetAddress.lookup('example.com');
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
         print('connected');
         setState(() {
-          isconnected = true;
+          isConnected = true;
         });
         /////////////////////////////////////////////////////
-        SharedPreferences prefs = await SharedPreferences.getInstance();
         selected.stream.listen((event) {
           setState(() {
             selectedItem2 = event;
@@ -107,15 +106,17 @@ class _HomePageState extends State<HomePage> {
                 rate: point.toString(),
                 star: starPoint.toString());
           }
+
         } else {
           kToast('دوباره تلاش کنید');
+
         }
       }
     } on SocketException catch (_) {
       print('not connected');
       kToast("برای ثبت امتیاز باید به اینترنت متصل باشید!");
       setState(() {
-        isconnected = false;
+        isConnected = false;
       });
     }
   }
@@ -145,7 +146,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   MyAlertBtn(
                     mLabel: 'خیر',
-                    mIcon: FontAwesomeIcons.multiply,
+                    mIcon: FontAwesomeIcons.xmark,
                     mColor: Colors.red,
                     mPress: () {
                       Navigator.of(context).pop(false);
@@ -158,36 +159,43 @@ class _HomePageState extends State<HomePage> {
         });
   }
 
-  getInfo() {
-    setState(() {
-      String? _rate = Brain.user.star;
-      String? _star = Brain.user.rate;
-      if (_rate != null) {
-        int r = int.parse(_rate);
-        point = r;
+  getInfo() async {
+    try {
+      if (Brain.user.star != '') {
+        String? rate2 = Brain.user.star;
+        String? star2 = Brain.user.rate;
+        int r = int.parse(rate2!, onError: (source) => 0);
+        int s = int.parse(star2!, onError: (source) => 0);
+        setState(() {
+          point = r;
+          starPoint = s;
+        });
       }
-      if (_star != null) {
-        int s = int.parse(_star);
-        starPoint = s;
-      }
-    });
+    } catch (e) {
+      print(e);
+    }
   }
 
   @override
   void initState() {
-    getInfo();
     selected.stream.listen((event) {
       setState(() {
         selectedItem2 = event;
       });
     });
     super.initState();
+    getInfo();
   }
 
   @override
   void dispose() {
     selected.close();
     super.dispose();
+  }
+  @override
+  void deactivate() {
+    Brain.user = User();
+    super.deactivate();
   }
 
   @override
@@ -198,16 +206,17 @@ class _HomePageState extends State<HomePage> {
         result ??= false;
         return result;
       },
-      child: Scaffold(
-        key: _scaffoldKey,
-        drawer: const MyDrawer(),
-        body: SafeArea(
-          child: Container(
+      child: SafeArea(
+        child: Scaffold(
+          key: _scaffoldKey,
+          drawer: const MyDrawer(),
+          body: Container(
             decoration: kBoxDecoration,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 /// point container
+
                 PointContainer(
                     starPoint: starPoint,
                     point: point,
@@ -227,6 +236,11 @@ class _HomePageState extends State<HomePage> {
                         animateFirst: false,
                         selected: selected.stream,
                         duration: const Duration(milliseconds: 6500),
+                        onAnimationStart: (){
+                          setState(() {
+                            disable = true;
+                          });
+                        },
                         onAnimationEnd: wheelFunction,
                         indicators: const <FortuneIndicator>[
                           FortuneIndicator(
@@ -239,24 +253,31 @@ class _HomePageState extends State<HomePage> {
                         items: items2),
                   ),
                 ),
-                !isconnected
-                    ? TryAgain(callBack: () {
+                isConnected
+                    ? (disable ? MyBtn1(
+                  mLable: 'چرخش',
+                  mColor: Colors.blueGrey,
+                  mPress: () {
+                    kToast('لطفا بعد از اتمام چرخش دوبازه تلاش کنید!');
+                  },
+                ): MyBtn1(
+                  mLable: 'چرخش',
+                  mColor: disable ? Colors.blueGrey:kButtonColor,
+                  mPress: () {
+                    player.play('sounds/s2.wav',
+                        mode: PlayerMode.LOW_LATENCY);
+                    setState(() {
+                      selected.add(
+                        Fortune.randomInt(0, 8),
+                      );
+
+                    });
+                  },
+                ))
+                    : TryAgain(callBack: () {
                         wheelFunction();
-                      })
-                    : MyBtn1(
-                        mLable: 'چرخش',
-                        mColor: kButtonColor,
-                        mPress: () {
-                          player.play('sounds/s2.wav',
-                              mode: PlayerMode.LOW_LATENCY);
-                          setState(() {
-                            selected.add(
-                              Fortune.randomInt(0, 8),
-                            );
-                          });
-                        },
-                      ),
-                MyNavBar(),
+                      }),
+                const MyNavBar(),
               ],
             ),
           ),

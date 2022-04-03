@@ -53,7 +53,7 @@ class MyDrawer extends StatelessWidget {
                   ),
                   MyAlertBtn(
                     mLabel: 'خیر',
-                    mIcon: FontAwesomeIcons.multiply,
+                    mIcon: FontAwesomeIcons.xmark,
                     mColor: Colors.red,
                     mPress: () {
                       Navigator.of(context).pop(false);

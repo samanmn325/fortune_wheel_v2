@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:fortune_wheel_v2/my_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'routes.dart';
-import 'screens/welcome_page.dart';
+import 'screens/brain.dart';
+import '../my_provider.dart';
 
-Future<void> main() async {
+main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await SystemChrome.setPreferredOrientations(
@@ -33,6 +33,6 @@ Future<void> main() async {
           primarySwatch: Colors.blue,
         ),
         routes: routes,
-        initialRoute: WelcomePage.routeName,
+        initialRoute: Brain.routeName,
       )));
 }

@@ -20,9 +20,9 @@ class User {
         rate = json['price'],
         star = json['short_description'];
 
-  @override
-  toString() => "{id: $id}, {name: $name},{rate: $rate},";
   // @override
-  // toString() =>
-  //     "{id: $id}, {name: $name}, {phoneNumber: $phoneNumber}, {star: $star},{rate: $rate},";
+  // toString() => "{id: $id}, {name: $name},{rate: $rate},";
+  @override
+  toString() =>
+      "{id: $id}, {name: $name}, {phoneNumber: $phoneNumber}, {star: $star},{rate: $rate},";
 }

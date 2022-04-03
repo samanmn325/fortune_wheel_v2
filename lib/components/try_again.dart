@@ -7,7 +7,7 @@ class TryAgain extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      child: Column(
+      child: Wrap(
         children: [
           const Text(
             'تلاش مجدد',
