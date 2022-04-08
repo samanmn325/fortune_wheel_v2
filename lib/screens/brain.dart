@@ -5,6 +5,7 @@ import 'package:fortune_wheel_v2/constants.dart';
 import 'package:fortune_wheel_v2/screens/wheel_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/item_model.dart';
 import '../models/user_model.dart';
 import '../network.dart';
 import 'login_page.dart';
@@ -15,10 +16,20 @@ class Brain extends StatefulWidget {
   }) : super(key: key);
   static String routeName = '/brain';
   static List<User> UserList = [];
-  static late String telegramUrl;
-  static late String youtubeUrl;
-  static late String instagramUrl;
   static late User user;
+  static List<Item> itemsList = [];
+  static List<int> itemsIntList = [];
+  static late int scorelimit;
+  ////////////////////////////////////
+  static late String telegramUrl;
+  static late int telegramPoint;
+/////////////////////////////////////////
+  static late String youtubeUrl;
+  static late int youtubePoint;
+///////////////////////////////////
+  static late String instagramUrl;
+  static late int instagramPoint;
+
   static bool isSignedup = false;
   @override
   State<Brain> createState() => _BrainState();
@@ -38,8 +49,9 @@ class _BrainState extends State<Brain> {
         ////////////////////////             ////////////////////////
         SharedPreferences prefs = await SharedPreferences.getInstance();
         String? phoneNumber = prefs.getString('phone number');
-        await Future.delayed(const Duration(seconds: 3));
         await Network().getUsersList();
+        await Network().getItemsList();
+
         Network().getUserId(phoneNumber: phoneNumber);
         Navigator.pushNamedAndRemoveUntil(
             context,

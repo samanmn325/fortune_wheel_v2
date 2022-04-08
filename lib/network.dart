@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'package:fortune_wheel_v2/constants.dart';
 import 'package:fortune_wheel_v2/screens/brain.dart';
+import 'package:html/parser.dart';
 import 'package:http/http.dart' as http;
 
+import 'models/item_model.dart';
 import 'models/user_model.dart';
 
 /// test.
@@ -15,6 +17,8 @@ const consumerKey = 'ck_fde918323b48f9f6e8d5d41f8c4a71a1724c6829';
 const consumerSecret = 'cs_d05f03b151b73373be1de9065747a406f394cb2b';
 
 class Network {
+  /// . get Users List ///////////////////////////////////////////////////////////////////
+
   getUsersList() async {
     http.Response response = await http.get(
       Uri.parse('https://betashop.epicsite.ir/wp-json/wc/v3/products'),
@@ -46,20 +50,34 @@ class Network {
       for (var temp in users) {
         if (temp.name == "youtube") {
           Brain.youtubeUrl = kParseHtmlString(temp.phoneNumber!);
-          print(Brain.instagramUrl);
+          Brain.youtubePoint =
+              int.parse(kParseHtmlString(temp.star!), onError: (source) => 10);
+
+          print('youtube Url is :${Brain.youtubeUrl}');
         } else if (temp.name == "telegram") {
           Brain.telegramUrl = kParseHtmlString(temp.phoneNumber!);
+          Brain.telegramPoint =
+              int.parse(kParseHtmlString(temp.star!), onError: (source) => 10);
+          print('telegram Url is :${Brain.telegramUrl}');
         } else if (temp.name == "instagram") {
           Brain.instagramUrl = kParseHtmlString(temp.phoneNumber!);
+          Brain.instagramPoint =
+              int.parse(kParseHtmlString(temp.star!), onError: (source) => 10);
+          print('instagram Url is :${Brain.instagramUrl}');
+        } else if (temp.name == "scorelimit") {
+          var sl = kParseHtmlString(temp.phoneNumber!);
+          Brain.scorelimit = int.parse(sl, onError: (source) => 500);
+          print('score limit is: ${Brain.scorelimit}');
         }
       }
       Brain.UserList = users;
-      print("products are : ");
-      print(users);
+      // print("products are : ${users}");
     } else {
       print(response.reasonPhrase);
     }
   }
+
+  /// . create User ///////////////////////////////////////////////////////////////////
 
   createUser({
     String? name,
@@ -92,6 +110,7 @@ class Network {
     }
   }
 
+  /// . get User ///////////////////////////////////////////////////////////////////
   getUserId({String? phoneNumber}) async {
     if (phoneNumber != null) {
       double num1 = double.parse(phoneNumber);
@@ -116,15 +135,16 @@ class Network {
                 phoneNumber: phoneNumber,
                 star: tempStar,
                 rate: tempRate);
+
             print(Brain.user);
             Brain.isSignedup = true;
           }
         }
-
       }
     }
   }
 
+  /// . update User ///////////////////////////////////////////////////////////////////
   updateUser({required int id, String? rate, String? star}) async {
     print("id is $id");
     var headers = {
@@ -145,5 +165,56 @@ class Network {
     } else {
       print(response.reasonPhrase);
     }
+  }
+
+  /// . get items numbre ///////////////////////////////////////////////////////////////////
+  getItemsList() async {
+    try {
+      http.Response response = await http.get(
+        Uri.parse(
+            'https://betashop.epicsite.ir/wp-json/wc/v3/products/categories'),
+        headers: <String, String>{
+          'Authorization':
+              'Basic Y2tfZmRlOTE4MzIzYjQ4ZjlmNmU4ZDVkNDFmOGM0YTcxYTE3MjRjNjgyOTpjc19kMDVmMDNiMTUxYjczMzczYmUxZGU5MDY1NzQ3YTQwNmYzOTRjYjJi'
+        },
+      );
+
+      if (response.statusCode == 200) {
+        var x = json.decode(utf8.decode(response.bodyBytes));
+        var list2 = x;
+
+        /// this for's block is for add Items to list
+        List<String> myList = [];
+        int t = 0;
+        for (var i in list2) {
+          if (isNumeric(list2[t]['name'])) {
+            myList.add(list2[t]['name']);
+          }
+          t++;
+        }
+        print("list2 is : $myList");
+
+        List<String> myList3 = myList.toSet().toList();
+        for (int i = 0; i < myList3.length; i++) {
+          if (i <= 11) {
+            int m = int.parse(myList3[i], onError: (source) => 0);
+            Brain.itemsIntList.add(m);
+          }
+        }
+
+        print('itrms are : ${Brain.itemsIntList}');
+      } else {
+        print(response.reasonPhrase);
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  bool isNumeric(String? s) {
+    if (s == null) {
+      return false;
+    }
+    return int.tryParse(s) != null;
   }
 }

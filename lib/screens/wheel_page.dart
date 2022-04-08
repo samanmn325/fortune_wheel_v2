@@ -9,10 +9,14 @@ import 'package:fortune_wheel_v2/components/my_drawer.dart';
 import 'package:fortune_wheel_v2/components/my_nav_bar.dart';
 import 'package:fortune_wheel_v2/components/point_container.dart';
 import 'package:fortune_wheel_v2/constants.dart';
+import 'package:fortune_wheel_v2/my_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../components/my_alert_btn.dart';
 import '../components/my_btn1.dart';
+import '../components/my_social_btn.dart';
 import '../components/try_again.dart';
 import '../components/wheel_items.dart';
 import '../models/user_model.dart';
@@ -31,6 +35,7 @@ class _WheelPageState extends State<WheelPage> {
   int sum = 0;
   int point = 0;
   int starPoint = 0;
+  int scorelimit = 500;
   int? selectedItem2;
   bool isConnected = true;
   bool disable = false;
@@ -57,43 +62,27 @@ class _WheelPageState extends State<WheelPage> {
         selected.stream.listen((event) {
           setState(() {
             selectedItem2 = event;
+            print('selectedItem2 is :${selectedItem2}');
           });
         });
         if (selectedItem2 != null) {
-          if (selectedItem2 == 0 ||
-              selectedItem2 == 3 ||
-              selectedItem2 == 6 ||
-              selectedItem2 == 9) {
-            sum += 100;
+          if (Brain.itemsIntList[selectedItem2!] > 0) {
+            sum += Brain.itemsIntList[selectedItem2!];
             player.play('sounds/win2.wav', mode: PlayerMode.LOW_LATENCY);
-            kToastWin("تبریک! شما برنده 100 امتیاز شدید");
+            kToastWin("تبریک! شما برنده $sum امتیاز شدید");
             setState(() {
               point += sum;
+
               sum = 0;
             });
-          } else if (selectedItem2 == 1 ||
-              selectedItem2 == 4 ||
-              selectedItem2 == 7 ||
-              selectedItem2 == 10) {
+          } else {
             player.play('sounds/lose.wav', mode: PlayerMode.LOW_LATENCY);
 
             kToastLose('متاسفانه شما امتیازی کسب نکردید');
-          } else if (selectedItem2 == 2 ||
-              selectedItem2 == 5 ||
-              selectedItem2 == 8 ||
-              selectedItem2 == 11) {
-            sum += 10;
-            player.play('sounds/win2.wav', mode: PlayerMode.LOW_LATENCY);
-
-            kToastWin("تبریک ! شما برنده 10 امتیاز شدید");
-            setState(() {
-              point += sum;
-              sum = 0;
-            });
           }
-          if (point >= 200) {
+          if (point >= scorelimit) {
             setState(() {
-              point -= 200;
+              point -= scorelimit.toInt();
               starPoint += 1;
               kToastWin("تبریک ! شما یک ستاره دریافت کردید");
             });
@@ -106,10 +95,8 @@ class _WheelPageState extends State<WheelPage> {
                 rate: point.toString(),
                 star: starPoint.toString());
           }
-
         } else {
           kToast('دوباره تلاش کنید');
-
         }
       }
     } on SocketException catch (_) {
@@ -166,13 +153,26 @@ class _WheelPageState extends State<WheelPage> {
         String? star2 = Brain.user.rate;
         int r = int.parse(rate2!, onError: (source) => 0);
         int s = int.parse(star2!, onError: (source) => 0);
+
         setState(() {
           point = r;
           starPoint = s;
+          scorelimit = Brain.scorelimit;
         });
       }
     } catch (e) {
       print(e);
+    }
+  }
+
+  Future<void> _launchInWeb(String url) async {
+    if (!await launch(
+      url,
+      forceSafariVC: false,
+      forceWebView: false,
+      headers: <String, String>{'my_header_key': 'my_header_value'},
+    )) {
+      throw 'Could not launch $url';
     }
   }
 
@@ -192,6 +192,7 @@ class _WheelPageState extends State<WheelPage> {
     selected.close();
     super.dispose();
   }
+
   @override
   void deactivate() {
     Brain.user = User();
@@ -233,51 +234,150 @@ class _WheelPageState extends State<WheelPage> {
                     height: MediaQuery.of(context).size.height * 0.42,
                     width: MediaQuery.of(context).size.width * 0.86,
                     child: FortuneWheel(
-                        animateFirst: false,
-                        selected: selected.stream,
-                        duration: const Duration(milliseconds: 6500),
-                        onAnimationStart: (){
-                          setState(() {
-                            disable = true;
-                          });
-                        },
-                        onAnimationEnd: wheelFunction,
-                        indicators: const <FortuneIndicator>[
-                          FortuneIndicator(
-                            alignment: Alignment.topCenter,
-                            child: TriangleIndicator(
-                              color: Colors.white,
-                            ),
+                      animateFirst: false,
+                      selected: selected.stream,
+                      duration: const Duration(milliseconds: 6500),
+                      onAnimationStart: () {
+                        setState(() {
+                          disable = true;
+                        });
+                      },
+                      onAnimationEnd: wheelFunction,
+                      indicators: const <FortuneIndicator>[
+                        FortuneIndicator(
+                          alignment: Alignment.topCenter,
+                          child: TriangleIndicator(
+                            color: Colors.white,
                           ),
-                        ],
-                        items: items2),
+                        ),
+                      ],
+
+                      /// todo:
+                      // items: createItems(),
+                      items: finalList,
+                    ),
                   ),
                 ),
                 isConnected
-                    ? (disable ? MyBtn1(
-                  mLable: 'چرخش',
-                  mColor: Colors.blueGrey,
-                  mPress: () {
-                    kToast('لطفا بعد از اتمام چرخش دوبازه تلاش کنید!');
-                  },
-                ): MyBtn1(
-                  mLable: 'چرخش',
-                  mColor: disable ? Colors.blueGrey:kButtonColor,
-                  mPress: () {
-                    player.play('sounds/s2.wav',
-                        mode: PlayerMode.LOW_LATENCY);
-                    setState(() {
-                      selected.add(
-                        Fortune.randomInt(0, 8),
-                      );
-
-                    });
-                  },
-                ))
+                    ? (disable
+                        ? MyBtn1(
+                            mLable: 'چرخش',
+                            mColor: Colors.blueGrey,
+                            mPress: () {
+                              kToast(
+                                  'لطفا بعد از اتمام چرخش دوبازه تلاش کنید!');
+                            },
+                          )
+                        : MyBtn1(
+                            mLable: 'چرخش',
+                            mColor: disable ? Colors.blueGrey : kButtonColor,
+                            mPress: () {
+                              player.play('sounds/s2.wav',
+                                  mode: PlayerMode.LOW_LATENCY);
+                              setState(() {
+                                selected.add(
+                                  Fortune.randomInt(
+                                      0, Brain.itemsIntList.length),
+                                );
+                              });
+                            },
+                          ))
                     : TryAgain(callBack: () {
                         wheelFunction();
                       }),
-                const MyNavBar(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    MySocialBtn(
+                      mIcon: FontAwesomeIcons.instagram,
+                      mIconColor: Colors.redAccent,
+                      mPress: () {
+                        // _launchInWeb(instagramUrl);
+                        try {
+                          if (Brain.instagramUrl != '') {
+                            setState(() {
+                              point = point + Brain.instagramPoint;
+                            });
+                            kToastWin(
+                                "تبریک ! شما امتیاز شبکه های اجتماعی دریافت کردید");
+                            if (point >= scorelimit) {
+                              setState(() {
+                                point -= scorelimit.toInt();
+                                starPoint += 1;
+                              });
+                              kToastWin("تبریک ! شما یک ستاره دریافت کردید");
+                            }
+
+                            _launchInWeb(Brain.instagramUrl);
+                          } else {
+                            kToast('متاسفانه اینستاگرام فعلا آدرس دهی نشده');
+                          }
+                        } catch (e) {
+                          print(e);
+                          kToast('متاسفانه اینستاگرام فعلا آدرس دهی نشده');
+                        }
+                      },
+                    ),
+                    MySocialBtn(
+                      mIcon: FontAwesomeIcons.telegram,
+                      mIconColor: Colors.blue,
+                      mPress: () {
+                        // _launchInWeb(telegramUrl);
+                        try {
+                          if (Brain.telegramUrl != '') {
+                            setState(() {
+                              point = point + Brain.telegramPoint;
+                            });
+                            kToastWin(
+                                "تبریک ! شما امتیاز شبکه های اجتماعی دریافت کردید");
+                            if (point >= scorelimit) {
+                              setState(() {
+                                point -= scorelimit.toInt();
+                                starPoint += 1;
+                              });
+                              kToastWin("تبریک ! شما یک ستاره دریافت کردید");
+                            }
+                            _launchInWeb(Brain.telegramUrl);
+                          } else {
+                            kToast('متاسفانه تلگرام فعلا آدرس دهی نشده');
+                          }
+                        } catch (e) {
+                          print(e);
+                          kToast('متاسفانه تلگرام فعلا آدرس دهی نشده');
+                        }
+                      },
+                    ),
+                    MySocialBtn(
+                      mIcon: FontAwesomeIcons.youtube,
+                      mIconColor: Colors.red,
+                      mPress: () {
+                        // _launchInWeb(youTubeUrl);
+                        try {
+                          if (Brain.youtubeUrl != '') {
+                            setState(() {
+                              point = point + Brain.youtubePoint;
+                            });
+                            kToastWin(
+                                "تبریک ! شما امتیاز شبکه های اجتماعی دریافت کردید");
+                            if (point >= scorelimit) {
+                              setState(() {
+                                point -= scorelimit.toInt();
+                                starPoint += 1;
+                              });
+                              kToastWin("تبریک ! شما یک ستاره دریافت کردید");
+                            }
+                            _launchInWeb(Brain.youtubeUrl);
+                          } else {
+                            kToast('متاسفانه یوتیوب فعلا آدرس دهی نشده');
+                          }
+                        } catch (e) {
+                          print(e);
+                          kToast('متاسفانه یوتیوب فعلا آدرس دهی نشده');
+                        }
+                      },
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -286,3 +386,57 @@ class _WheelPageState extends State<WheelPage> {
     );
   }
 }
+
+
+// if (selectedItem2 != null) {
+//           if (selectedItem2 == 0 ||
+//               selectedItem2 == 3 ||
+//               selectedItem2 == 6 ||
+//               selectedItem2 == 9) {
+//             sum += 100;
+//             player.play('sounds/win2.wav', mode: PlayerMode.LOW_LATENCY);
+//             kToastWin("تبریک! شما برنده 100 امتیاز شدید");
+//             setState(() {
+//               point += sum;
+
+//               sum = 0;
+//             });
+//           } else if (selectedItem2 == 1 ||
+//               selectedItem2 == 4 ||
+//               selectedItem2 == 7 ||
+//               selectedItem2 == 10) {
+//             player.play('sounds/lose.wav', mode: PlayerMode.LOW_LATENCY);
+
+//             kToastLose('متاسفانه شما امتیازی کسب نکردید');
+//           } else if (selectedItem2 == 2 ||
+//               selectedItem2 == 5 ||
+//               selectedItem2 == 8 ||
+//               selectedItem2 == 11) {
+//             sum += 10;
+//             player.play('sounds/win2.wav', mode: PlayerMode.LOW_LATENCY);
+
+//             kToastWin("تبریک ! شما برنده 10 امتیاز شدید");
+//             setState(() {
+//               point += sum;
+
+//               sum = 0;
+//             });
+//           }
+//           if (point >= scorelimit) {
+//             setState(() {
+//               point -= scorelimit.toInt();
+//               starPoint += 1;
+//               kToastWin("تبریک ! شما یک ستاره دریافت کردید");
+//             });
+//           }
+//           ///////////////////////////////////////////////////
+//           if (Brain.user.id != null) {
+//             print('شروع بروزرسانی');
+//             Network().updateUser(
+//                 id: Brain.user.id!,
+//                 rate: point.toString(),
+//                 star: starPoint.toString());
+//           }
+//         } else {
+//           kToast('دوباره تلاش کنید');
+//         }
