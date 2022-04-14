@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants.dart';
+import '../screens/brain.dart';
 import '../screens/login_page.dart';
 import 'my_alert_btn.dart';
 
@@ -63,31 +64,27 @@ class MyDrawer extends StatelessWidget {
               ),
             ],
           ),
-          const ExpansionTile(
-            title: Text(
+          ExpansionTile(
+            title: const Text(
               'ارتباط با ما',
               style: TextStyle(fontSize: 18),
             ),
-            leading: Icon(FontAwesomeIcons.message),
+            leading: const Icon(FontAwesomeIcons.message),
             children: <Widget>[
               Align(
-                child: Text(' ایمیل :  example@gmail.com  '),
+                child: Text(Brain.connectUs),
                 alignment: Alignment.center,
               ),
-              SizedBox(
+              const SizedBox(
                 height: 5.0,
               ),
-              Divider(
+              const Divider(
                 endIndent: 30,
                 indent: 30,
                 height: 1,
                 thickness: 1,
               ),
-              Align(
-                child: Text(' شماره تماس :  09124589652'),
-                alignment: Alignment.center,
-              ),
-              SizedBox(
+              const SizedBox(
                 height: 5.0,
               ),
             ],

@@ -7,25 +7,27 @@ import 'package:http/http.dart' as http;
 import 'models/item_model.dart';
 import 'models/user_model.dart';
 
-/// test.
-// const baseUrl = 'https://test.epicsite.ir/';
-// const consumerKey = 'ck_e329b45d8c8360e6956d967a3baeb94362c6eefd';
-// const consumerSecret = 'cs_99569f4006a3e936be9c6c0c22739dabf57d9e7e';
+/// inforgram.
+const baseUrl = 'https://inforgram.ir/';
+const consumerKey = 'ck_94b2fcdd11cdb0248e588519df54690e6ae7d29e';
+const consumerSecret = 'cs_8551f878f795370bc7b186bfce958e4a219f2ec3';
+const token =
+    'Basic Y2tfOTRiMmZjZGQxMWNkYjAyNDhlNTg4NTE5ZGY1NDY5MGU2YWU3ZDI5ZTpjc184NTUxZjg3OGY3OTUzNzBiYzdiMTg2YmZjZTk1OGU0YTIxOWYyZWMz';
+
 /// betashop.
-const baseUrl = 'https://betashop.epicsite.ir/';
-const consumerKey = 'ck_fde918323b48f9f6e8d5d41f8c4a71a1724c6829';
-const consumerSecret = 'cs_d05f03b151b73373be1de9065747a406f394cb2b';
+// const baseUrl = 'https://betashop.epicsite.ir/';
+// const consumerKey = 'ck_fde918323b48f9f6e8d5d41f8c4a71a1724c6829';
+// const consumerSecret = 'cs_d05f03b151b73373be1de9065747a406f394cb2b';
+// const token =
+//     'Basic Y2tfZmRlOTE4MzIzYjQ4ZjlmNmU4ZDVkNDFmOGM0YTcxYTE3MjRjNjgyOTpjc19kMDVmMDNiMTUxYjczMzczYmUxZGU5MDY1NzQ3YTQwNmYzOTRjYjJi';
 
 class Network {
   /// . get Users List ///////////////////////////////////////////////////////////////////
 
   getUsersList() async {
     http.Response response = await http.get(
-      Uri.parse('https://betashop.epicsite.ir/wp-json/wc/v3/products'),
-      headers: <String, String>{
-        'Authorization':
-            'Basic Y2tfZmRlOTE4MzIzYjQ4ZjlmNmU4ZDVkNDFmOGM0YTcxYTE3MjRjNjgyOTpjc19kMDVmMDNiMTUxYjczMzczYmUxZGU5MDY1NzQ3YTQwNmYzOTRjYjJi'
-      },
+      Uri.parse(baseUrl + 'wp-json/wc/v3/products'),
+      headers: <String, String>{'Authorization': token},
     );
     if (response.statusCode == 200) {
       var x = json.decode(utf8.decode(response.bodyBytes));
@@ -68,6 +70,9 @@ class Network {
           var sl = kParseHtmlString(temp.phoneNumber!);
           Brain.scorelimit = int.parse(sl, onError: (source) => 500);
           print('score limit is: ${Brain.scorelimit}');
+        } else if (temp.name == "contactUs") {
+          Brain.connectUs = kParseHtmlString(temp.phoneNumber!);
+          print('connect us message is: ${Brain.connectUs}');
         }
       }
       Brain.UserList = users;
@@ -86,11 +91,10 @@ class Network {
     try {
       var headers = {
         'Content-Type': 'application/json',
-        'Authorization':
-            'Basic Y2tfZmRlOTE4MzIzYjQ4ZjlmNmU4ZDVkNDFmOGM0YTcxYTE3MjRjNjgyOTpjc19kMDVmMDNiMTUxYjczMzczYmUxZGU5MDY1NzQ3YTQwNmYzOTRjYjJi'
+        'Authorization': token
       };
-      var request = http.Request('POST',
-          Uri.parse('https://betashop.epicsite.ir/wp-json/wc/v3/products'));
+      var request =
+          http.Request('POST', Uri.parse(baseUrl + 'wp-json/wc/v3/products'));
       request.body = json.encode({
         "name": name,
         "description": phoneNumber,
@@ -147,13 +151,9 @@ class Network {
   /// . update User ///////////////////////////////////////////////////////////////////
   updateUser({required int id, String? rate, String? star}) async {
     print("id is $id");
-    var headers = {
-      'Content-Type': 'application/json',
-      'Authorization':
-          'Basic Y2tfZmRlOTE4MzIzYjQ4ZjlmNmU4ZDVkNDFmOGM0YTcxYTE3MjRjNjgyOTpjc19kMDVmMDNiMTUxYjczMzczYmUxZGU5MDY1NzQ3YTQwNmYzOTRjYjJi'
-    };
-    var request = http.Request('PUT',
-        Uri.parse('https://betashop.epicsite.ir/wp-json/wc/v3/products/$id'));
+    var headers = {'Content-Type': 'application/json', 'Authorization': token};
+    var request =
+        http.Request('PUT', Uri.parse(baseUrl + 'wp-json/wc/v3/products/$id'));
     request.body =
         json.encode({"short_description": rate, "regular_price": star});
     request.headers.addAll(headers);
@@ -171,12 +171,8 @@ class Network {
   getItemsList() async {
     try {
       http.Response response = await http.get(
-        Uri.parse(
-            'https://betashop.epicsite.ir/wp-json/wc/v3/products/categories'),
-        headers: <String, String>{
-          'Authorization':
-              'Basic Y2tfZmRlOTE4MzIzYjQ4ZjlmNmU4ZDVkNDFmOGM0YTcxYTE3MjRjNjgyOTpjc19kMDVmMDNiMTUxYjczMzczYmUxZGU5MDY1NzQ3YTQwNmYzOTRjYjJi'
-        },
+        Uri.parse(baseUrl + 'wp-json/wc/v3/products/categories'),
+        headers: <String, String>{'Authorization': token},
       );
 
       if (response.statusCode == 200) {

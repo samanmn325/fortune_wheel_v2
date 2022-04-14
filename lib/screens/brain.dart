@@ -20,6 +20,7 @@ class Brain extends StatefulWidget {
   static List<Item> itemsList = [];
   static List<int> itemsIntList = [];
   static late int scorelimit;
+  static late String connectUs;
   ////////////////////////////////////
   static late String telegramUrl;
   static late int telegramPoint;
