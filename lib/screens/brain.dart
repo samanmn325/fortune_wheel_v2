@@ -50,10 +50,11 @@ class _BrainState extends State<Brain> {
         ////////////////////////             ////////////////////////
         SharedPreferences prefs = await SharedPreferences.getInstance();
         String? phoneNumber = prefs.getString('phone number');
+        await Future.delayed(Duration(seconds: 3));
+
         await Network().getUsersList();
         await Network().getItemsList();
-
-        Network().getUserId(phoneNumber: phoneNumber);
+        await Network().getUserId(phoneNumber: phoneNumber);
         Navigator.pushNamedAndRemoveUntil(
             context,
             phoneNumber == null ? LoginPage.routeName : WheelPage.routeName,

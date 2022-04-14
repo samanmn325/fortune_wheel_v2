@@ -14,13 +14,6 @@ const consumerSecret = 'cs_8551f878f795370bc7b186bfce958e4a219f2ec3';
 const token =
     'Basic Y2tfOTRiMmZjZGQxMWNkYjAyNDhlNTg4NTE5ZGY1NDY5MGU2YWU3ZDI5ZTpjc184NTUxZjg3OGY3OTUzNzBiYzdiMTg2YmZjZTk1OGU0YTIxOWYyZWMz';
 
-/// betashop.
-// const baseUrl = 'https://betashop.epicsite.ir/';
-// const consumerKey = 'ck_fde918323b48f9f6e8d5d41f8c4a71a1724c6829';
-// const consumerSecret = 'cs_d05f03b151b73373be1de9065747a406f394cb2b';
-// const token =
-//     'Basic Y2tfZmRlOTE4MzIzYjQ4ZjlmNmU4ZDVkNDFmOGM0YTcxYTE3MjRjNjgyOTpjc19kMDVmMDNiMTUxYjczMzczYmUxZGU5MDY1NzQ3YTQwNmYzOTRjYjJi';
-
 class Network {
   /// . get Users List ///////////////////////////////////////////////////////////////////
 
@@ -124,6 +117,7 @@ class Network {
         /// replaceAll() is for remove all whitespaces
         charNum1 = charNum1.replaceAll(RegExp(r"\s+"), "");
         if (charNum1.length == 11) {
+          print('اینجا');
           double num2 = double.parse(charNum1);
           if (num1 == num2) {
             String tempName = kParseHtmlString(tempUser.name!);
