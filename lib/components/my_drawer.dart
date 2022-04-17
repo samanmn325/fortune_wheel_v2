@@ -18,14 +18,25 @@ class MyDrawer extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          const DrawerHeader(
-            decoration: BoxDecoration(
+          DrawerHeader(
+            decoration: const BoxDecoration(
               color: kButtonColor,
             ),
             child: Center(
-              child: Text(
-                'چرخ شانس',
-                style: kButtonTextStyle,
+              child: Column(
+                children: const [
+                  SizedBox(
+                    height: 100,
+                    width: 100,
+                    child: Image(
+                      image: AssetImage('assets/images/logo3.png'),
+                    ),
+                  ),
+                  Text(
+                    'HIT',
+                    style: kButtonTextStyle,
+                  ),
+                ],
               ),
             ),
           ),

@@ -227,12 +227,15 @@ class _WheelPageState extends State<WheelPage> {
                 Card(
                   shape: RoundedRectangleBorder(
                     side: const BorderSide(color: Colors.red, width: 10),
-                    borderRadius: BorderRadius.circular(500),
+                    borderRadius: BorderRadius.circular(200),
                   ),
                   color: kButtonColor,
                   child: SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.42,
-                    width: MediaQuery.of(context).size.width * 0.86,
+                    // height: MediaQuery.of(context).size.height * 0.42,
+                    // width: MediaQuery.of(context).size.width * 0.86,
+                    height:
+                        MediaQuery.of(context).size.height > 330 ? 330 : 290,
+                    width: MediaQuery.of(context).size.width > 330 ? 330 : 290,
                     child: FortuneWheel(
                       animateFirst: false,
                       selected: selected.stream,
@@ -265,7 +268,7 @@ class _WheelPageState extends State<WheelPage> {
                             mColor: Colors.blueGrey,
                             mPress: () {
                               kToast(
-                                  'لطفا بعد از اتمام چرخش دوبازه تلاش کنید!');
+                                  'لطفا بعد از اتمام چرخش دوباره تلاش کنید!');
                             },
                           )
                         : MyBtn1(
@@ -386,57 +389,3 @@ class _WheelPageState extends State<WheelPage> {
     );
   }
 }
-
-
-// if (selectedItem2 != null) {
-//           if (selectedItem2 == 0 ||
-//               selectedItem2 == 3 ||
-//               selectedItem2 == 6 ||
-//               selectedItem2 == 9) {
-//             sum += 100;
-//             player.play('sounds/win2.wav', mode: PlayerMode.LOW_LATENCY);
-//             kToastWin("تبریک! شما برنده 100 امتیاز شدید");
-//             setState(() {
-//               point += sum;
-
-//               sum = 0;
-//             });
-//           } else if (selectedItem2 == 1 ||
-//               selectedItem2 == 4 ||
-//               selectedItem2 == 7 ||
-//               selectedItem2 == 10) {
-//             player.play('sounds/lose.wav', mode: PlayerMode.LOW_LATENCY);
-
-//             kToastLose('متاسفانه شما امتیازی کسب نکردید');
-//           } else if (selectedItem2 == 2 ||
-//               selectedItem2 == 5 ||
-//               selectedItem2 == 8 ||
-//               selectedItem2 == 11) {
-//             sum += 10;
-//             player.play('sounds/win2.wav', mode: PlayerMode.LOW_LATENCY);
-
-//             kToastWin("تبریک ! شما برنده 10 امتیاز شدید");
-//             setState(() {
-//               point += sum;
-
-//               sum = 0;
-//             });
-//           }
-//           if (point >= scorelimit) {
-//             setState(() {
-//               point -= scorelimit.toInt();
-//               starPoint += 1;
-//               kToastWin("تبریک ! شما یک ستاره دریافت کردید");
-//             });
-//           }
-//           ///////////////////////////////////////////////////
-//           if (Brain.user.id != null) {
-//             print('شروع بروزرسانی');
-//             Network().updateUser(
-//                 id: Brain.user.id!,
-//                 rate: point.toString(),
-//                 star: starPoint.toString());
-//           }
-//         } else {
-//           kToast('دوباره تلاش کنید');
-//         }

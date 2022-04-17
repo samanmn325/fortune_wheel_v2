@@ -1,10 +1,10 @@
 import 'dart:convert';
-import 'package:fortune_wheel_v2/constants.dart';
-import 'package:fortune_wheel_v2/screens/brain.dart';
-import 'package:html/parser.dart';
+import 'dart:math';
+
+import '../constants.dart';
+import '../screens/brain.dart';
 import 'package:http/http.dart' as http;
 
-import 'models/item_model.dart';
 import 'models/user_model.dart';
 
 /// inforgram.
@@ -175,18 +175,18 @@ class Network {
 
         /// this for's block is for add Items to list
         List<String> myList = [];
-        int t = 0;
-        for (var i in list2) {
-          if (isNumeric(list2[t]['name'])) {
-            myList.add(list2[t]['name']);
+        for (var it in list2) {
+          if (isNumeric(it['name'])) {
+            myList.add(it['name']);
           }
-          t++;
         }
+
+        myList = shuffle(myList);
         print("list2 is : $myList");
 
         List<String> myList3 = myList.toSet().toList();
         for (int i = 0; i < myList3.length; i++) {
-          if (i <= 11) {
+          if (i < 10) {
             int m = int.parse(myList3[i], onError: (source) => 0);
             Brain.itemsIntList.add(m);
           }
@@ -206,5 +206,22 @@ class Network {
       return false;
     }
     return int.tryParse(s) != null;
+  }
+
+  //
+  List<String> shuffle(List<String> items) {
+    var random = new Random();
+
+    // Go through all elements.
+    for (var i = items.length - 1; i > 0; i--) {
+      // Pick a pseudorandom number according to the list length
+      var n = random.nextInt(i + 1);
+
+      var temp = items[i];
+      items[i] = items[n];
+      items[n] = temp;
+    }
+
+    return items;
   }
 }
