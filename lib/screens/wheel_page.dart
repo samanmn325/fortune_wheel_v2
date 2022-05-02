@@ -210,7 +210,7 @@ class _WheelPageState extends State<WheelPage> {
       child: SafeArea(
         child: Scaffold(
           key: _scaffoldKey,
-          drawer: const MyDrawer(),
+          drawer: MyDrawer(),
           body: Container(
             decoration: kBoxDecoration,
             child: Column(

@@ -14,6 +14,13 @@ class MyDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var a;
+    try{
+       a = Brain.connectUs;
+    }catch(e){
+      a = ' ';
+    }
+
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -83,7 +90,7 @@ class MyDrawer extends StatelessWidget {
             leading: const Icon(FontAwesomeIcons.message),
             children: <Widget>[
               Align(
-                child: Text(Brain.connectUs),
+                child: Text('$a'),
                 alignment: Alignment.center,
               ),
               const SizedBox(
